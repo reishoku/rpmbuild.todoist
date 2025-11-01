@@ -1,0 +1,68 @@
+
+name: Build RPM
+
+on:
+  push:
+    paths:
+      - '*.spec'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - '*.spec'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+jobs:
+  build-rpm:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: almalinux:10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install RPM build tools
+        run: |
+          dnf -q install -y epel-release
+          dnf -q --refresh makecache -y
+          dnf -q --setopt='install_weak_deps=False' install -y @"RPM Development Tools" findutils dnf-plugins-core
+
+      - name: Set up RPM build environment
+        run: |
+          rpmdev-setuptree
+
+      - name: Copy spec file
+        run: |
+          cp todoist.spec ~/rpmbuild/SPECS/
+
+      - name: Download source files
+        run: |
+          cd ~/rpmbuild/SOURCES
+          rpmdev-spectool -g ../SPECS/todoist.spec
+
+          find . -mindepth 1 -maxdepth 1 -type f -executable
+
+      - name: Install build dependencies
+        run: |
+          dnf -q build-dep -y ~/rpmbuild/SPECS/todoist.spec
+
+      - name: Build RPM
+        run: |
+          cd ~/rpmbuild/SPECS
+          rpmbuild -ba \
+            --nodebuginfo \
+            ~/rpmbuild/SPECS/todoist.spec
+
+      - name: List built RPMs
+        run: |
+          find ~/rpmbuild/RPMS -type f -name "*.rpm" -ls
+          find ~/rpmbuild/RPMS -type f -name "*.rpm" -exec rpm -qpi {} \+
+          find ~/rpmbuild/RPMS -type f -name "*.rpm" -exec rpm -qpl {} \+
