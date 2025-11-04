@@ -31,8 +31,8 @@ go build -a -v -x -mod=vendor -buildmode pie -compiler gc -ldflags "-s -w" -trim
 
 %install
 install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
-install -Dpm 0644 todoist_functions_fzf.sh -t %{buildroot}%{zsh_completions_dir}
-install -Dpm 0644 todoist_functions_fzf_bash.sh -t %{buildroot}%{bash_completions_dir}
+install -Dpm 0644 todoist_functions_fzf.sh -t %{buildroot}%{_datadir}/zsh/site-functions/
+install -Dpm 0644 todoist_functions_fzf_bash.sh -t %{buildroot}%{_datadir}/bash-completion/completions/
 
 %check
 go test -v
@@ -42,12 +42,15 @@ rm -rf %{buildroot}
 
 %files
 %{_bindir}/%{name}
-%{zsh_completions_dir}/todoist_functions_fzf.sh
-%{bash_completions_dir}/todoist_functions_fzf_bash.sh
+%{_datadir}/zsh/site-functions/todoist_functions_fzf.sh
+%{_datadir}/bash-completion/completions/todoist_functions_fzf_bash.sh
 %license LICENSE
 %doc README.md
 
 %changelog
+* Thu Nov 4 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.22.0-2
+- Modify Spec
+
 * Mon Oct 13 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.22.0-1
 - Initial RPM package for todoist
 - Release 0.22.0
