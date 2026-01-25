@@ -1,3 +1,4 @@
+%global debug_package %{nil}
 
 Name:           todoist
 Version:        0.23.0
@@ -18,7 +19,6 @@ Recommends: fzf
 %description
 Todoist CLI Client, written in Golang.
 
-%global debug_package %{nil}
 %define gomodulesmode GO111MODULE=auto
 
 %prep
