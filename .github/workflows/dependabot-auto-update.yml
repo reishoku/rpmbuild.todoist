@@ -1,0 +1,66 @@
+name: Dependabot Auto Update
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-spec:
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, 'github.com/sachaos/todoist')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Extract new version from PR title
+        id: extract
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          NEW_VERSION=$(echo "$TITLE" | grep -oP 'to \K[0-9]+\.[0-9]+\.[0-9]+')
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $NEW_VERSION"
+
+      - name: Update spec file version
+        run: |
+          NEW_VERSION="${{ steps.extract.outputs.new_version }}"
+          if [ -z "$NEW_VERSION" ]; then
+            echo "Could not extract version from PR title"
+            exit 1
+          fi
+
+          CURRENT_VERSION=$(grep -oP '^Version:\s*\K[0-9]+\.[0-9]+\.[0-9]+' todoist.spec)
+          echo "Current version: $CURRENT_VERSION"
+          echo "New version: $NEW_VERSION"
+
+          if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+            echo "Version already up to date"
+            exit 0
+          fi
+
+          sed -i "s/^Version:.*$/Version:        $NEW_VERSION/" todoist.spec
+          echo "Updated spec file version to $NEW_VERSION"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet todoist.spec; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add todoist.spec
+          git commit -m "Update spec file version to ${{ steps.extract.outputs.new_version }}"
+          git push
