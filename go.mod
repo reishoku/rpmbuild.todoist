@@ -1,7 +1,5 @@
 module github.com/reishoku/rpmbuild.todoist
 
-go 1.24
+go 1.25
 
-require (
-  github.com/sachaos/todoist v0.22.0
-)
+require github.com/sachaos/todoist v0.23.0

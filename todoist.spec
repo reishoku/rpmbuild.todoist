@@ -1,6 +1,6 @@
 
 Name:           todoist
-Version:        0.22.0
+Version:        0.23.0
 Release:        1%{?dist}
 Summary:        Todoist CLI client
 
