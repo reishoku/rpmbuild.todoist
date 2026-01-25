@@ -9,25 +9,26 @@ License:        MIT
 URL:            https://github.com/sachaos/todoist
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz
 
-BuildRequires: golang
-BuildRequires: gcc
+ExclusiveArch:  %{go_arches}
 
-Provides: %{name} = %{version}
+# Build-time dependencies
+BuildRequires:  golang
+BuildRequires:  gcc
+BuildRequires:  go-rpm-macros
 
-Recommends: fzf
+# Run-time dependencies
+Recommends:     fzf
 
 %description
 Todoist CLI Client, written in Golang.
 
-%define gomodulesmode GO111MODULE=auto
-
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -n %{name}-%{version}
 go mod vendor
 
 %build
 export CGO_ENABLED=1
-go build -a -v -x -mod=vendor -buildmode pie -compiler gc -ldflags "-s -w" -trimpath -o %{name}
+go build -mod=vendor -buildmode pie -compiler gc -ldflags "-s -w" -trimpath -o %{name} .
 
 %install
 install -Dpm 0755 %{name} %{buildroot}%{_bindir}/%{name}
@@ -35,10 +36,7 @@ install -Dpm 0644 todoist_functions_fzf.sh -t %{buildroot}%{_datadir}/zsh/site-f
 install -Dpm 0644 todoist_functions_fzf_bash.sh -t %{buildroot}%{_datadir}/bash-completion/completions/
 
 %check
-go test -v
-
-%clean
-rm -rf %{buildroot}
+go test -mod=vendor -vet=off ./...
 
 %files
 %{_bindir}/%{name}
@@ -48,6 +46,10 @@ rm -rf %{buildroot}
 %doc README.md
 
 %changelog
+* Sat Jan 25 2026 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.23.0-1
+- Update to 0.23.0
+- Use Go RPM macros for ExclusiveArch
+
 * Thu Nov 4 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.22.0-2
 - Modify Spec
 
