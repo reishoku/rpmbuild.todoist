@@ -53,10 +53,16 @@ jobs:
           # Add entry to %changelog
           DATE=$(date '+%a %b %d %Y')
           AUTHOR="KOSHIKAWA Kenichi <reishoku.misc@pm.me>"
-          ENTRY="* $DATE $AUTHOR - $NEW_VERSION-1\n- Update todoist => $NEW_VERSION"
 
-          sed -i "/%changelog/a\\
-$ENTRY" todoist.spec
+          awk -v date="$DATE" -v author="$AUTHOR" -v ver="$NEW_VERSION" '
+            /%changelog/ {
+              print
+              print "* " date " " author " - " ver "-1"
+              print "- Update todoist => " ver
+              next
+            }
+            {print}
+          ' todoist.spec > todoist.spec.tmp && mv todoist.spec.tmp todoist.spec
 
           echo "Updated spec file version to $NEW_VERSION"
 
