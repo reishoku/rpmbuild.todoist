@@ -13,3 +13,13 @@ updates:
         patterns:
           - github.com/sachaos/todoist
     open-pull-requests-limit: 1
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      timezone: "Asia/Tokyo"
+      interval: "daily"
+      time: "05:00"
+    assignees:
+      - "reishoku"
+    open-pull-requests-limit: 1
