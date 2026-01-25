@@ -1,0 +1,53 @@
+name: Create Release Tag
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - reishoku
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    if: github.event.pull_request.merged == true && github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, 'github.com/sachaos/todoist')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Extract version and release from spec
+        id: spec
+        run: |
+          VERSION=$(grep -oP '^Version:\s*\K[0-9]+\.[0-9]+\.[0-9]+' todoist.spec)
+          RELEASE=$(grep -oP '^Release:\s*\K[0-9]+' todoist.spec)
+          TAG="${VERSION}-${RELEASE}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "release=$RELEASE" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Extracted: Version=$VERSION, Release=$RELEASE, Tag=$TAG"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.spec.outputs.tag }}"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist"
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.spec.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Created and pushed tag: $TAG"
