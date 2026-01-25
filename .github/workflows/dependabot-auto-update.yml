@@ -27,7 +27,7 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $NEW_VERSION"
 
-      - name: Update spec file version
+      - name: Update spec file
         run: |
           NEW_VERSION="${{ steps.extract.outputs.new_version }}"
           if [ -z "$NEW_VERSION" ]; then
@@ -44,7 +44,20 @@ jobs:
             exit 0
           fi
 
+          # Update Version field
           sed -i "s/^Version:.*$/Version:        $NEW_VERSION/" todoist.spec
+
+          # Reset Release to 1
+          sed -i "s/^Release:.*$/Release:        1%{?dist}/" todoist.spec
+
+          # Add entry to %changelog
+          DATE=$(date '+%a %b %d %Y')
+          AUTHOR="KOSHIKAWA Kenichi <reishoku.misc@pm.me>"
+          ENTRY="* $DATE $AUTHOR - $NEW_VERSION-1\n- Update todoist => $NEW_VERSION"
+
+          sed -i "/%changelog/a\\
+$ENTRY" todoist.spec
+
           echo "Updated spec file version to $NEW_VERSION"
 
       - name: Check for changes
