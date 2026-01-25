@@ -5,6 +5,7 @@ updates:
     schedule:
       timezone: "Asia/Tokyo"
       interval: "daily"
+      time: "05:00"
     assignees:
       - "reishoku"
     groups:
