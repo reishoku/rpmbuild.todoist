@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           todoist
-Version:        0.23.0
+Version:        0.24.0
 Release:        1%{?dist}
 Summary:        Todoist CLI client
 
@@ -46,6 +46,8 @@ go test -mod=vendor -vet=off ./...
 %doc README.md
 
 %changelog
+* Sun May 03 2026 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.24.0-1
+- Update todoist => 0.24.0
 * Sat Jan 25 2026 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.23.0-1
 - Update to 0.23.0
 - Use Go RPM macros for ExclusiveArch
