@@ -1,8 +1,8 @@
 module github.com/reishoku/rpmbuild.todoist
 
-go 1.25
+go 1.26
 
-require github.com/sachaos/todoist v0.24.0
+require github.com/sachaos/todoist v0.25.0
 
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
